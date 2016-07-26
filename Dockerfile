@@ -12,9 +12,9 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install zip \
     && docker-php-ext-install mcrypt \
     && docker-php-ext-install mbstring \
-    && docker-php-ext-install -j$(nproc) gd \
-    && docker-php-ext-install -j$(nproc) pod_mysql \
-    && docker-php-ext-install -j$(nproc) curl
+    && docker-php-ext-install pod_mysql \
+    && docker-php-ext-install gd \
+    && docker-php-ext-install curl
 
 COPY libs/redis-3.0.0.tgz /home/redis.tgz
 COPY libs/mongodb-1.1.8.tgz /home/mongo.tgz
