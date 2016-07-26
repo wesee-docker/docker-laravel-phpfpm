@@ -1,46 +1,41 @@
-FROM debian:jessie
+FROM php:7.0-fpm
 
-MAINTAINER "Dylan Lindgren" <dylan.lindgren@gmail.com>
+MAINTAINER "billqiang" <whenjonny@gmail.com>
 
-# Install PHP-FPM and popular/laravel required extensions
-RUN apt-get update -y && \
-    apt-get install -y \
-    php5-fpm \
-    php5-curl \
-    php5-gd \
-    php5-geoip \
-    php5-imagick \
-    php5-imap \
-    php5-json \
-    php5-ldap \
-    php5-mcrypt \
-    php5-memcache \
-    php5-memcached \
-    php5-mongo \
-    php5-mssql \
-    php5-mysqlnd \
-    php5-pgsql \
-    php5-redis \
-    php5-sqlite \
-    php5-xdebug \
-    php5-xmlrpc \
-    php5-xcache
+RUN apt-get update && apt-get install -y \
+        libfreetype6-dev \
+        libjpeg62-turbo-dev \
+        libmcrypt-dev \
+        libpng12-dev \
+    && docker-php-ext-install -j$(nproc) iconv \
+    && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
+    && docker-php-ext-install zip \
+    && docker-php-ext-install mcrypt \
+    && docker-php-ext-install mbstring \
+    && docker-php-ext-install -j$(nproc) gd \
+    && docker-php-ext-install -j$(nproc) pod_mysql \
+    && docker-php-ext-install -j$(nproc) curl
 
-# Configure PHP-FPM
-RUN sed -i "s/;date.timezone =.*/date.timezone = UTC/" /etc/php5/fpm/php.ini && \
-    sed -i "s/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/" /etc/php5/fpm/php.ini && \
-    sed -i "s/display_errors = Off/display_errors = stderr/" /etc/php5/fpm/php.ini && \
-    sed -i "s/upload_max_filesize = 2M/upload_max_filesize = 30M/" /etc/php5/fpm/php.ini && \
-    sed -i "s/;opcache.enable=0/opcache.enable=0/" /etc/php5/fpm/php.ini && \
-    sed -i -e "s/;daemonize\s*=\s*yes/daemonize = no/g" /etc/php5/fpm/php-fpm.conf && \
-    sed -i '/^listen = /clisten = 9000' /etc/php5/fpm/pool.d/www.conf && \
-    sed -i '/^listen.allowed_clients/c;listen.allowed_clients =' /etc/php5/fpm/pool.d/www.conf && \
-    sed -i '/^;catch_workers_output/ccatch_workers_output = yes' /etc/php5/fpm/pool.d/www.conf && \
-    sed -i '/^;env\[TEMP\] = .*/aenv[DB_PORT_3306_TCP_ADDR] = $DB_PORT_3306_TCP_ADDR' /etc/php5/fpm/pool.d/www.conf
+COPY libs/redis-3.0.0.tgz /home/redis.tgz
+COPY libs/mongodb-1.1.8.tgz /home/mongo.tgz
+COPY libs/swoole-1.8.7.tgz /home/swoole.tgz
 
-RUN mkdir -p /data
-VOLUME ["/data"]
+RUN pecl install /home/redis.tgz && echo "extension=redis.so" > /usr/local/etc/php/conf.d/redis.ini \
+        && pecl install /home/mongo.tgz && echo "extension=mongo.so" > /usr/local/etc/php/conf.d/mongo.ini \
+        && pecl install /home/swoole.tgz && echo "extension=swoole.so" > /usr/local/etc/php/conf.d/swoole.ini
+
+# PHP config
+ADD php.ini         /usr/local/etc/php/php.ini
+ADD php-fpm.conf    /usr/local/etc/php-fpm.conf
+
+# Composer
+ADD composer.phar /usr/local/bin/composer
+RUN chmod 755 /usr/local/bin/composer
+
+WORKDIR /data/code/web
+
+# Write Permission
+RUN usermod -u 1000 www-data
 
 EXPOSE 9000
-
-ENTRYPOINT ["/usr/sbin/php5-fpm", "-F"]
+VOLUME ["/data"]
