@@ -30,6 +30,7 @@ COPY php-fpm.conf    /usr/local/etc/php-fpm.conf
 # Composer
 COPY libs/composer.phar /usr/local/bin/composer
 RUN chmod 755 /usr/local/bin/composer
+RUN mkdir -p /data/log/php
 
 WORKDIR /data/code
 
