@@ -24,14 +24,14 @@ RUN pecl install /home/redis.tgz && echo "extension=redis.so" > /usr/local/etc/p
         && pecl install /home/swoole.tgz && echo "extension=swoole.so" > /usr/local/etc/php/conf.d/swoole.ini
 
 # PHP config
-ADD php.ini         /usr/local/etc/php/php.ini
-ADD php-fpm.conf    /usr/local/etc/php-fpm.conf
+COPY php.ini         /usr/local/etc/php/php.ini
+COPY php-fpm.conf    /usr/local/etc/php-fpm.conf
 
 # Composer
-ADD libs/composer.phar /usr/local/bin/composer
+COPY libs/composer.phar /usr/local/bin/composer
 RUN chmod 755 /usr/local/bin/composer
 
-WORKDIR /data/code/web
+WORKDIR /data/code
 
 # Write Permission
 RUN usermod -u 1000 www-data
