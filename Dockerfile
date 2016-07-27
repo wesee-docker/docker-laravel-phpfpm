@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install zip \
     && docker-php-ext-install mcrypt \
     && docker-php-ext-install mbstring \
+    && docker-php-ext-install pdo_mysql \
     && docker-php-ext-install mysqli 
 
 COPY libs/redis-3.0.0.tgz /home/redis.tgz
