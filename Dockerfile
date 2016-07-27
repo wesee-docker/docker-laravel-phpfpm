@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install mysqli 
 
 COPY libs/redis-3.0.0.tgz /home/redis.tgz
-COPY libs/mongodb-1.1.1.tgz /home/mongodb.tgz
+COPY libs/mongodb-1.1.8.tgz /home/mongodb.tgz
 COPY libs/swoole-1.8.7.tgz /home/swoole.tgz
 
 RUN pecl install /home/redis.tgz && echo "extension=redis.so" > /usr/local/etc/php/conf.d/redis.ini \
